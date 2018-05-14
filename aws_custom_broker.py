@@ -21,14 +21,16 @@ def get_sts_details():
                 RoleArn = ROLE_ARN,
                 RoleSessionName = ROLE_SESSION_NAME
             )
-    print("Response : ", response)
+    #print("Response : ", response)
+    print_value("Response", response)
 
     sts_response_data = {}
     sts_response_data['sessionId'] = response['Credentials']['AccessKeyId']
     sts_response_data['sessionKey'] = response['Credentials']['SecretAccessKey']
     sts_response_data['sessionToken'] = response['Credentials']['SessionToken']
     sts_details = json.dumps(sts_response_data)
-    print("STS_DETAILS : {sts_details}".format(sts_details=sts_details))
+    #print("STS_DETAILS : {sts_details}".format(sts_details=sts_details))
+    print_value("STS_DETAILS",sts_details)
 
     return sts_details
 
@@ -42,31 +44,33 @@ def encode_value(value):
 def get_aws_federation_request_url(encoded_session_query_parameter):
     '''
         This method returns AWS Federated URL.
-    :param encoded_session_query_parameter: 
+    :param encoded_session_query_parameter:
     :return: AWS federated url.
     '''
     request_parameters = "?Action=getSigninToken"
     request_parameters += "&SessionDuration={session_duration}".format(session_duration=SESSION_DURATION)
     request_parameters += "&Session=" + encoded_session_query_parameter
     federation_request_url = AWS_FEDERATION_URL + request_parameters
-    print("federation_request_url : ", federation_request_url)
+    #print("federation_request_url : ", federation_request_url)
+    print_value("federation_request_url",federation_request_url)
     return federation_request_url
 
 def get_signin_token(federation_request_url):
     '''
         This method returns signin token value.
-    :param federation_request_url: 
+    :param federation_request_url:
     :return: signin token value
     '''
     response = requests.get(federation_request_url)
     signin_token = json.loads(response.text)['SigninToken']
-    print("signin_token : ", signin_token)
+    #print("signin_token : ", signin_token)
+    print_value("signin_token",signin_token)
     return signin_token
 
 def get_aws_signin_url(signin_token):
     '''
         Returns AWS Signin URL
-    :param signin_token: 
+    :param signin_token:
     :return: AWS signin url
     '''
     request_parameters = "?Action=login"
@@ -74,9 +78,12 @@ def get_aws_signin_url(signin_token):
     request_parameters += "&Destination=" + encode_value(AWS_CONSOLE_URL)
     request_parameters += "&SigninToken=" + signin_token
     aws_signin_url = AWS_FEDERATION_URL + request_parameters
-    print("AWS Sign In URL : ", aws_signin_url)
+    #print("AWS Sign In URL : ", aws_signin_url)
+    #print_value("aws_signin_url",aws_signin_url)
     return aws_signin_url
 
+def print_value(name, value):
+    print("{name} : {value}\n".format(name=name, value=value))
 
 sts_details = get_sts_details()
 encoded_session_query_parameter = encode_value(sts_details)
@@ -86,6 +93,5 @@ federation_request_url = get_aws_federation_request_url(encoded_session_query_pa
 signin_token = get_signin_token(federation_request_url)
 aws_signin_url = get_aws_signin_url(signin_token)
 
-print("AWS Signin URL : {aws_signin_url}".format(aws_signin_url=aws_signin_url))
-
-
+#print("AWS Signin URL : {aws_signin_url}".format(aws_signin_url=aws_signin_url))
+print_value("AWS Signin URL",aws_signin_url)
